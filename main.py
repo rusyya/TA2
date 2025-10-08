@@ -208,6 +208,7 @@ class AirportSystem:
                     choice = input("ВВОД: ").strip()
                     if choice == '1':
                         print("ДОБАВЛЕНИЕ РЕЙСА")
+                        self.add_new_flight()
                     elif choice == '2':
                         print("УДАЛЕНИЕ РЕЙСА")
                         self.cancel_flight()
@@ -262,7 +263,7 @@ class AirportSystem:
                 print(f"Свободно мест: {selected_flight.available_seats}")
             else:
                 print("Не удалось добавить пассажира. Рейс заполнен!")
-                if selected_flight.passengers_count >= selected_flight.aircraft.capacity:
+                if selected_flight.passenger_count >= selected_flight.aircraft.capacity:
                     print("Рейс отменен из-за недостатка мест!")
                     selected_flight.cancel_flight()
                     conn = sqlite3.connect(self.db_name)
@@ -272,6 +273,55 @@ class AirportSystem:
                     conn.close()
         except ValueError as e:
             print(f"Ошибка в данных: {e}")
+
+    def add_new_flight(self):
+        available_aircrafts = [x for x in self.aircrafts if x.is_available]
+        if not available_aircrafts:
+            print("Нет доступных самолётов")
+        try:
+            flight_number = input("Номер рейса: ").strip()
+            if not flight_number:
+                print("Номер не может быть пустым")
+                return
+            if next((x for x in self.flights if x.flight_number == flight_number), None):
+                print("Рейс уже существует")
+            departure = input("Город вылета: ").strip()
+            if not departure:
+                print("Город вылета не может быть пустым")
+                return
+            destination = input("Город назначения: ")
+            if not destination:
+                print("Город назначения не может быть пустым")
+                return
+            departure_time = input("Вылет: ГГГГ-ММ-ДД ЧЧ:ММ ").strip()
+            try:
+                datetime.strptime(departure_time, "%Y-%m-%d %H:%M")
+            except ValueError:
+                print("Неверный формат")
+                return
+            try:
+                duration_min = int(input("Длительность (мин): "))
+                if duration_min <= 0:
+                    print("Введите положительное число: ")
+                    return
+            except ValueError:
+                print("Введите число")
+                return
+            print("Доступные самолёты:")
+            for i, aircraft in enumerate(available_aircrafts, 1):
+                print(f"{i}. {aircraft.model} ({aircraft.registration}) - {aircraft.capacity} мест")
+            try:
+                aircraft_choice = int(input("Выберите самолёт: ")) - 1
+                if aircraft_choice < 0 or aircraft_choice >= len(available_aircrafts):
+                    print("Неверный выбор")
+                    return
+                selected_aircraft = available_aircrafts[aircraft_choice]
+            except (ValueError, IndexError):
+                print("Неверный выбор")
+                return
+            self.save_flight(Flight(flight_number, departure, destination, departure_time, selected_aircraft, duration_min))
+        except Exception as e:
+            print(f"Ошибка при создании рейса: {e}")
 
     def cancel_flight(self):
         print("ОТМЕНА РЕЙСА")
