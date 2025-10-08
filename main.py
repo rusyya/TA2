@@ -364,7 +364,7 @@ class AirportSystem:
             else:
                 print("\nНа рейсе нет пассажиров")
         except (ValueError, IndexError):
-            print("Неверный выбор рейса.")
+            print("Неверный выбор рейса")
 
 
 if __name__ == "__main__":
