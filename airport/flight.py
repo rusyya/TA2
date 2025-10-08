@@ -80,12 +80,12 @@ class Flight(ABC):
     def get_flight_info(self):
         status = "Отменён" if self._is_cancelled else "По расписанию"
         return (
-            f"Рейс № {self._flight_number}"
-            f"Из: {self.departure}, время: {self._departure_time.strftime('%Y-%m-%d %H:%M')}"
-            f"До: {self.destination}, время: {self.arrival_time.strftime('%Y-%m-%d %H:%M')}"
-            f"Время в пути (мин): {self._duration_min}"
-            f"Самолёт: {self._aircraft.model}"
-            f"Пассажиры: {self.passenger_count}/{self._aircraft.capacity}, {self.occupancy_rate}%"
+            f"Рейс № {self._flight_number}\n"
+            f"Из: {self.departure}, время: {self._departure_time.strftime('%Y-%m-%d %H:%M')}\n"
+            f"До: {self.destination}, время: {self.arrival_time.strftime('%Y-%m-%d %H:%M')}\n"
+            f"Время в пути (мин): {self._duration_min}\n"
+            f"Самолёт: {self._aircraft.model}\n"
+            f"Пассажиры: {self.passenger_count}/{self._aircraft.capacity}, {self.occupancy_rate}\n%"
             f"Статус: {status}")
 
     def __str__(self):

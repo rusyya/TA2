@@ -28,6 +28,9 @@ class Passenger:
     def full_name(self):
         return f"{self._surname} {self._name} {self._patronymic}"
     @property
+    def date_of_birth(self):
+        return self._date_of_birth
+    @property
     def age(self):
         today = datetime.now().date()
         return today.year - self._date_of_birth.year - ((today.month, today.day) < (self._date_of_birth.month, self._date_of_birth.day))
