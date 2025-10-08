@@ -1,6 +1,7 @@
 from airport import *
 from datetime import datetime
 import sqlite3
+from docx import Document
 import os
 
 
@@ -143,20 +144,62 @@ class AirportSystem:
 
     def display_statistics(self):
         print("АЭРОПОРТ - СТАТИСТИКА")
-        print(f"Всего самолетов: {len(self.aircrafts)}")
-        print(f"Всего пассажиров: {len(self.passengers)}")
-        print(f"Всего рейсов: {len(self.flights)}")
+        aircrafts_num = len(self.aircrafts)
+        passengers_num = len(self.passengers)
+        flights_num = len(self.flights)
         active_flights = [f for f in self.flights if not f.is_cancelled]
         cancelled_flights = [f for f in self.flights if f.is_cancelled]
+        print(f"Всего самолетов: {aircrafts_num}")
+        print(f"Всего пассажиров: {passengers_num}")
+        print(f"Всего рейсов: {flights_num}")
         print(f"Активных рейсов: {len(active_flights)}")
         print(f"Отмененных рейсов: {len(cancelled_flights)}")
+        avg_occupancy = 0
         if active_flights:
             avg_occupancy = sum(f.occupancy_rate for f in active_flights) / len(active_flights)
             print(f"Средняя заполненность: {avg_occupancy:.1f}%")
-        print("\nСамолеты:")
+        print("Самолеты:")
+        status = ''
         for aircraft in self.aircrafts:
             status = "Доступен" if aircraft.is_available else "Не доступен"
-            print(f"  - {aircraft}")
+            print(f"  - {aircraft} {status}")
+        print("Хотите экспортировать этот отчёт в DOC?\nНажмите 'y', чтобы экспортировать.")
+        try:
+            yn = input("ВВОД: ")
+            if yn == 'y':
+                doc = Document()
+                title = doc.add_heading('СТАТИСТИКА', 0)
+                doc.add_paragraph()
+                text = [
+                    f"Всего самолётов: {aircrafts_num}\n"
+                    f"Всего пассажиров: {passengers_num}\n"
+                    f"Всего рейсов: {flights_num}\n"
+                    f"Активных рейсов: {len(active_flights)}\n"
+                    f"Отменённых рейсов: {len(cancelled_flights)}\n"
+                    f"Средняя заполненность: {avg_occupancy}%\n"
+                ]
+                for w in text:
+                    doc.add_paragraph(w)
+                doc.add_paragraph()
+                doc.add_heading('Самолёты:', level=1)
+                for a in self.aircrafts:
+                    doc.add_paragraph(f" - {a} {status}")
+                doc.add_paragraph()
+                doc.add_heading('Рейсы:', level=1)
+                for f in self.flights:
+                    status = "ОТМЕНЁН" if f.is_cancelled else "АКТИВЕН"
+                    doc.add_paragraph(
+                        f"  - {f.flight_number}: {f.departure} → {f.destination} ({status})")
+                    doc.add_paragraph(f"Пассажиров: {f.passenger_count}/{f.aircraft.capacity}")
+                filename = f"REPORT_{datetime.now().strftime('%Y%m%d_%H%M')}.docx"
+                doc.save(filename)
+                print(f"Файл сохранён: {filename}")
+            else:
+                return
+        except (ValueError, IndexError):
+            print("Неверный выбор")
+            return
+
     def run(self):
         while True:
             print("СИСТЕМА УПРАВЛЕНИЯ АЭРОПОРТОМ")
@@ -368,5 +411,4 @@ class AirportSystem:
 
 
 if __name__ == "__main__":
-    system = AirportSystem()
-    system.run()
+    AirportSystem().run()
